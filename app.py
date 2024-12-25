@@ -30,12 +30,8 @@ if st.button("Start Scraping"):
         # List to store book details
         books = []
 
-        # Placeholder for real-time updates
-        real_time_display = st.empty()  # For line-by-line updates
-        table_placeholder = st.empty()  # For the real-time table
-
         # Function to extract data from a single page
-        def extract_data_from_page(soup, page):
+        def extract_data_from_page(soup, page, real_time_display):
             for book in soup.find_all('article', class_='product_pod'):
                 title = book.h3.a['title']
                 price = book.find('p', class_='price_color').text
@@ -59,9 +55,6 @@ if st.button("Start Scraping"):
                 books.append(book_data)
                 real_time_display.text(f"Scraped: {title} | Price: {price} | Availability: {availability}")
 
-                # Update the real-time table
-                table_placeholder.dataframe(pd.DataFrame(books))
-
         # Function to convert rating text to a number
         def convert_rating_to_number(rating_text):
             rating_dict = {
@@ -84,6 +77,7 @@ if st.button("Start Scraping"):
 
         # Scrape the specified number of pages
         st.write(f"Scraping data from the first {num_pages} pages at {user_url}...")
+        real_time_display = st.empty()  # Placeholder for real-time updates
         for page in range(1, num_pages + 1):
             url = base_url.format(page)
             response = requests.get(url)
@@ -91,7 +85,7 @@ if st.button("Start Scraping"):
                 st.error(f"Failed to fetch data from page {page}. Please check the URL and try again.")
                 break
             soup = BeautifulSoup(response.content, 'html.parser')
-            extract_data_from_page(soup, page)
+            extract_data_from_page(soup, page, real_time_display)
             st.write(f"Extracted data from page {page}")
 
         # Save the data to a CSV file
